@@ -1,0 +1,53 @@
+
+```
+declare 
+BEGIN
+FOR I IN (
+SELECT NOVE_DARKHAST_CODE ,
+       MAX(MIN_DARSAD_OSTAN_AZ_KOL_KESHVAR) f1,
+       MAX(NEG_DARSAD_OSTAN_AZ_KOL_KESHVAR) f2,
+       MAX(AVG_DARSAD_OSTAN_AZ_KOL_KESHVAR) f3,
+       MAX(POS_DARSAD_OSTAN_AZ_KOL_KESHVAR) f4,
+       MAX(MAX_DARSAD_OSTAN_AZ_KOL_KESHVAR) f5 FROM GIS_KHANEVAR_OSTAN 
+ GROUP BY NOVE_DARKHAST_CODE order by NOVE_DARKHAST_CODE ) LOOP
+ htp.p(i.NOVE_DARKHAST_CODE || '=>' || i.f1 || '-' || i.f2 || '-' || i.f3 || '-' || i.f4 || '-' || i.f5) ;
+UPDATE mdsys.sdo_styles_table SET DEFINITION = UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="0"]/@label', i.f1 || '-' || i.f2).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="0"]/@low',i.f1).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="0"]/@high',i.f2).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;  
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="0"]/@style','C.EMDAD_GREEN').getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;     
+
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="1"]/@label',i.f2 || '-' || i.f3).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="1"]/@low',i.f2).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="1"]/@high',i.f3).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;     
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="1"]/@style','C.EMDAD_YELLOW').getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;   
+
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="2"]/@label',i.f3 || '-' || i.f4).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="2"]/@low',i.f3).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="2"]/@high',i.f4).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="2"]/@style','C.EMDAD_PURPLE').getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE; 
+
+
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="3"]/@label',i.f4 || '-' || i.f5).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="3"]/@low',i.f4).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="3"]/@high',i.f5).getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE; 
+UPDATE mdsys.sdo_styles_table SET DEFINITION =   UPDATEXML(xmltype(DEFINITION),
+   '/AdvancedStyle/BucketStyle/Buckets/RangedBucket[@seq="3"]/@style','C.EMDAD_RED').getClobVal() where name = 'V.DARKHAST_'|| i.NOVE_DARKHAST_CODE;
+
+ END LOOP;
+ END;
+```
