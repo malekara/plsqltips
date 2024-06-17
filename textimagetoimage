@@ -1,0 +1,142 @@
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED addTextImageToImage AS
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.sql.Blob;
+import java.sql.SQLException;
+import javax.imageio.ImageIO;
+import oracle.sql.BLOB;
+import java.sql.Connection;
+
+public class ImageProcessorTextImage {
+    public static BLOB addImageToImage(BLOB mainImageBlob, BLOB overlayImageBlob, int x, int y) throws SQLException, IOException {
+        InputStream mainInputStream = mainImageBlob.getBinaryStream();
+        BufferedImage mainImage = ImageIO.read(mainInputStream);
+
+        InputStream overlayInputStream = overlayImageBlob.getBinaryStream();
+        BufferedImage overlayImage = ImageIO.read(overlayInputStream);
+
+        Graphics2D g2d = mainImage.createGraphics();
+
+         int z = overlayImage.getHeight();
+         int t = mainImage.getHeight();
+         y = t-z;
+        
+        g2d.drawImage(overlayImage, x, y, null);
+        g2d.dispose(); 
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(mainImage, "jpg", baos);
+        byte[] imageBytes = baos.toByteArray();
+
+        Connection conn = mainImageBlob.getJavaSqlConnection();
+        BLOB newBlob = BLOB.createTemporary(conn, true, BLOB.DURATION_SESSION);
+        OutputStream outputStream = newBlob.setBinaryStream(1);
+        outputStream.write(imageBytes);
+        outputStream.flush();
+        outputStream.close();
+
+        return newBlob;
+    }
+
+     public static BLOB addTextToImage(BLOB imageBlob, String text1, String text2, String text3, String text4, String text5, String text6, String text7, String text8, String text9,  int x, int y) throws SQLException, IOException {
+        InputStream inputStream = imageBlob.getBinaryStream();
+        BufferedImage image = ImageIO.read(inputStream);
+
+        Graphics2D g2d = image.createGraphics();
+        g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+        g2d.setColor(Color.BLACK);
+        int z1 = image.getHeight()-115;
+        int z2 = image.getHeight()-35;
+        g2d.drawString(text1, 150, z1);
+        g2d.drawString(text2, 150, z2);
+        g2d.drawString(text3, 420, z1);
+        g2d.drawString(text4, 420, z2);
+        g2d.drawString(text5, 600, z1);
+        g2d.drawString(text6, 600, z2);
+        g2d.drawString(text7, 735, z2);
+        g2d.drawString(text8, 935, z1);
+        g2d.drawString(text9, 935, z2);
+
+        g2d.dispose();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", baos);
+        byte[] imageBytes = baos.toByteArray();
+
+        Connection conn = imageBlob.getJavaSqlConnection();
+        BLOB newBlob = BLOB.createTemporary(conn, true, BLOB.DURATION_SESSION);
+        OutputStream outputStream = newBlob.setBinaryStream(1);
+        outputStream.write(imageBytes);
+        outputStream.flush();
+        outputStream.close();
+
+        return newBlob;
+    }
+}
+
+
+create or replace FUNCTION add_txt_to_img2(
+     main_image_blob IN BLOB,
+     text1 IN varchar2,
+      text2 IN varchar2,
+       text3 IN varchar2,
+        text4 IN varchar2,
+         text5 IN varchar2,
+          text6 IN varchar2,
+           text7 IN varchar2,
+            text8 IN varchar2,
+             text9 IN varchar2,
+    x IN NUMBER,
+    y IN NUMBER
+) RETURN BLOB AS
+    LANGUAGE JAVA
+    NAME 'ImageProcessorTextImage.addTextToImage(oracle.sql.BLOB, java.lang.String, java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String, int, int) return oracle.sql.BLOB';
+
+
+create or replace FUNCTION add_img_to_img(
+     main_image_blob IN BLOB,
+    overlay_image_blob IN BLOB,
+    x IN NUMBER,
+    y IN NUMBER
+) RETURN BLOB AS
+    LANGUAGE JAVA
+    NAME 'ImageProcessorTextImage.addImageToImage(oracle.sql.BLOB, oracle.sql.BLOB, int, int) return oracle.sql.BLOB';
+
+
+create or replace function  fnc_ins_info_to_sheet2(p_main_img_file blob,p_title varchar2,p_Orig_size varchar2,p_part_no varchar2,
+p_grade varchar2,p_project varchar2,p_qty varchar2,p_length varchar2,p_other varchar2,p_Sheet_No varchar2 ) return number is
+l_logo blob;
+l_main blob;
+l_new_image blob;
+l_id number;
+begin
+select image into l_logo from tbs_empty_logo;
+--select image into l_main from tbs_input_images;
+l_main := p_main_img_file;
+l_new_image :=add_img_to_img(
+    main_image_blob  => l_main ,
+    overlay_image_blob =>l_logo ,
+    x => 0,
+    y=>1480
+) ;
+-- parameter1
+l_new_image :=add_txt_to_img2(
+    main_image_blob => l_new_image ,
+    text1 => 'Title:' || p_title ,
+    text2 => 'Orig. size:' || p_Orig_size ,
+    text3 => 'Part NO:' || p_part_no ,
+    text4 => 'Grade:' || p_grade ,
+    text5 => 'Project:' || p_project ,
+    text6 => 'QTY:' || p_qty,
+    text7 => 'Length:' || p_length,
+    text8 => 'Sheet No:' || p_sheet_no  ,
+    text9 => 'Other:' || p_other   ,
+    x => 150 ,
+    y => 1540 
+);
+
+insert into tbl_output (id, image, file_name , mime) values (image_seq.nextval,l_new_image, 'output.png' , 'image/png') returning id into l_id;
+commit;
+return l_id;
+end;
