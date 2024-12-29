@@ -1,0 +1,153 @@
+CREATE TABLE  "G4B_SYSTEM_ERROR_LOG" 
+   (	"PK_SYSTEM_ERROR_LOG_ID" NUMBER NOT NULL ENABLE, 
+	"SQL_ERROR" VARCHAR2(4000), 
+	"SQL_CODE" VARCHAR2(4000), 
+	"PACKAGE_NAME" VARCHAR2(500), 
+	"METHOD_NAME" VARCHAR2(500), 
+	"ERROR_BACKTRACE" VARCHAR2(4000), 
+	"REQUEST_NUMBER" NUMBER, 
+	"ERROR_DATE" DATE, 
+	"PLSQL_UNIT" VARCHAR2(4000), 
+	"PLSQL_LINE" VARCHAR2(4000), 
+	"EXTRA_FIELD_01" VARCHAR2(4000), 
+	"EXTRA_FIELD_02" VARCHAR2(4000), 
+	"EXTRA_FIELD_03" VARCHAR2(4000), 
+	"EXTRA_FIELD_04" VARCHAR2(4000), 
+	"EXTRA_FIELD_05" VARCHAR2(4000), 
+	"EXTRA_FIELD_06" VARCHAR2(4000), 
+	"EXTRA_FIELD_07" VARCHAR2(4000), 
+	"EXTRA_FIELD_08" VARCHAR2(4000), 
+	"EXTRA_FIELD_09" VARCHAR2(4000), 
+	"EXTRA_FIELD_10" VARCHAR2(4000), 
+	"EXTRA_FIELD_11" VARCHAR2(4000), 
+	"EXTRA_FIELD_12" VARCHAR2(4000), 
+	"EXTRA_FIELD_13" VARCHAR2(4000), 
+	"EXTRA_FIELD_14" VARCHAR2(4000), 
+	"EXTRA_FIELD_15" VARCHAR2(4000)
+   )
+/
+
+ CREATE SEQUENCE   "SEQ_SYSTEM_ERROR_LOG"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 26461 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL
+
+create or replace PROCEDURE PRC_SYSTEM_ERROR_LOG(P_SQL_ERROR       VARCHAR2,
+                                                 P_SQL_CODE        VARCHAR2,
+                                                 P_PACKAGE_NAME    VARCHAR2,
+                                                 P_METHOD_NAME     VARCHAR2,
+                                                 P_ERROR_BACKTRACE VARCHAR2,
+                                                 P_ORDER_ID        NUMBER,
+                                                 P_PLSQL_UNIT      VARCHAR2 := NULL,
+                                                 P_PLSQL_LINE      VARCHAR2 := NULL,
+                                                 P_EXTRA_FIELD_01  VARCHAR2 := NULL,
+                                                 P_EXTRA_FIELD_02  VARCHAR2 := NULL,
+                                                 P_EXTRA_FIELD_03  VARCHAR2 := NULL,
+                                                 P_EXTRA_FIELD_04  VARCHAR2 := NULL,
+                                                 P_EXTRA_FIELD_05  VARCHAR2 := NULL,
+                                                 P_REFERENCE_ID    OUT NUMBER) AS
+
+  PRAGMA AUTONOMOUS_TRANSACTION;
+  V_RES VARCHAR2(4000);
+BEGIN
+  P_REFERENCE_ID := SEQ_SYSTEM_ERROR_LOG.NEXTVAL;
+
+  INSERT INTO G4B_SYSTEM_ERROR_LOG
+    (PK_SYSTEM_ERROR_LOG_ID,
+     SQL_ERROR,
+     SQL_CODE,
+     PACKAGE_NAME,
+     METHOD_NAME,
+     ERROR_BACKTRACE,
+     REQUEST_NUMBER,
+     ERROR_DATE,
+     PLSQL_UNIT,
+     PLSQL_LINE,
+     EXTRA_FIELD_01,
+     EXTRA_FIELD_02,
+     EXTRA_FIELD_03,
+     EXTRA_FIELD_04,
+     EXTRA_FIELD_05,
+     EXTRA_FIELD_06,
+     EXTRA_FIELD_07,
+     EXTRA_FIELD_08,
+     EXTRA_FIELD_09,
+     EXTRA_FIELD_10,
+     EXTRA_FIELD_11,
+     EXTRA_FIELD_12,
+     EXTRA_FIELD_13,
+     EXTRA_FIELD_14,
+     EXTRA_FIELD_15)
+  VALUES
+    (P_REFERENCE_ID,
+     P_SQL_ERROR,
+     P_SQL_CODE,
+     P_PACKAGE_NAME,
+     P_METHOD_NAME,
+     P_ERROR_BACKTRACE,
+     P_ORDER_ID,
+     SYSDATE,
+     P_PLSQL_UNIT,
+     P_PLSQL_LINE,
+     P_EXTRA_FIELD_01,
+     P_EXTRA_FIELD_02,
+     P_EXTRA_FIELD_03,
+     P_EXTRA_FIELD_04,
+     P_EXTRA_FIELD_05,
+     SYS.DBMS_UTILITY.FORMAT_ERROR_BACKTRACE,
+     SYS.DBMS_UTILITY.FORMAT_CALL_STACK,
+     NULL,
+     NULL,
+     NULL,
+     NULL,
+     NULL,
+     NULL,
+     NULL,
+     NULL);
+  COMMIT;
+
+EXCEPTION
+  WHEN OTHERS THEN
+    P_REFERENCE_ID := SQLCODE;
+    V_RES          := SQLERRM;
+    ROLLBACK;
+END;
+
+
+create or replace FUNCTION FNC_CALL_STACK RETURN VARCHAR2 IS
+  V_RESULT VARCHAR2(4000) := NULL;
+BEGIN
+  FOR THE_DEPTH IN REVERSE 1 .. 5 LOOP
+    --UTL_CALL_STACK.DYNAMIC_DEPTH() LOOP
+    V_RESULT := V_RESULT || 'PACKAGE : ' ||
+                UTL_CALL_STACK.CONCATENATE_SUBPROGRAM(UTL_CALL_STACK.SUBPROGRAM(THE_DEPTH)) ||
+                ' LINE : ' || UTL_CALL_STACK.UNIT_LINE(THE_DEPTH) || '^NEXT^';
+  END LOOP;
+  V_RESULT := SUBSTR(V_RESULT, 1, LENGTH(V_RESULT) - 6);
+  RETURN V_RESULT;
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN 'false utl_call_stack';
+END;
+
+PRC_SYSTEM_ERROR_LOG (
+                P_SQL_ERROR        => SQLERRM,
+                P_SQL_CODE         => SQLCODE,
+                P_PACKAGE_NAME     => 'G4B_PKG_V3',
+                P_METHOD_NAME      => 'SET_ALLDOCUMENT_APPROVE_DATE',
+                P_ERROR_BACKTRACE   =>
+                    UTL_CALL_STACK.CONCATENATE_SUBPROGRAM (
+                        UTL_CALL_STACK.SUBPROGRAM (
+                            UTL_CALL_STACK.BACKTRACE_DEPTH)),
+                P_ORDER_ID         => in_request_number ,
+                P_PLSQL_UNIT       =>
+                    UTL_CALL_STACK.BACKTRACE_UNIT (
+                        UTL_CALL_STACK.BACKTRACE_DEPTH),
+                P_PLSQL_LINE       =>
+                    UTL_CALL_STACK.BACKTRACE_LINE (
+                        UTL_CALL_STACK.BACKTRACE_DEPTH),
+                P_EXTRA_FIELD_01   => FNC_CALL_STACK,
+                P_EXTRA_FIELD_02   => NULL,
+                P_EXTRA_FIELD_03   => NULL,
+                P_EXTRA_FIELD_04   => NULL,
+                P_EXTRA_FIELD_05   => NULL,
+                P_REFERENCE_ID     => G_REFERENCE_ID);
+
+
