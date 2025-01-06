@@ -1,0 +1,11 @@
+DECLARE
+  j apex_json.t_values;
+  l clob;
+BEGIN
+  apex_json.initialize_clob_output;
+  apex_json.parse(j, '{ "foo": 3, "bar": { "x": 1, "y": 2 }}');
+  apex_json.write(j,'bar');
+   l:= apex_json.get_clob_output;
+   htp.p(l);
+
+END;
