@@ -1,0 +1,10 @@
+update APEX_230200.wwv_flow_step_items t  set t.DISPLAY_AS = 'PLUGIN_PARS_DATE_PICKER' , ATTRIBUTE_01 = 'Y' , ATTRIBUTE_02 = 'Y' , ATTRIBUTE_03 = 'Y'  , ATTRIBUTE_14 =  null where 
+DISPLAY_AS = 'PLUGIN_ALBORZ_APEX.PERSIAN_DATE_TIME_PICKER' and ATTRIBUTE_01 = '3' and FLOW_ID = 100 and flow_step_id = 56;
+
+
+update APEX_230200.wwv_flow_step_items t  set t.DISPLAY_AS = 'PLUGIN_PARS_DATE_PICKER' , ATTRIBUTE_01 = 'N' , ATTRIBUTE_02 = 'Y' , ATTRIBUTE_03 = 'Y'  , ATTRIBUTE_14 =  null where 
+DISPLAY_AS = 'PLUGIN_ALBORZ_APEX.PERSIAN_DATE_TIME_PICKER' and ATTRIBUTE_01 = 1 and FLOW_ID = 100 and flow_step_id = 56;
+
+
+update APEX_230200.wwv_flow_step_items t  set t.DISPLAY_AS = 'PLUGIN_PARS_DATE_PICKER' , ATTRIBUTE_01 = 'N' , ATTRIBUTE_02 = 'Y' , ATTRIBUTE_03 = 'Y'  , ATTRIBUTE_14 =  null where 
+DISPLAY_AS = 'PLUGIN_DATEPICKER.IR' and FLOW_ID = 100 and flow_step_id = 56;
