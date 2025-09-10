@@ -1,0 +1,4 @@
+SELECT request_number
+FROM G4B_TB_LICENSE_OLD_ISSUE
+WHERE REGEXP_LIKE(request_number, '[^0-9]') 
+   OR request_number IS NULL;
